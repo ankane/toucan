@@ -1,6 +1,7 @@
 require "rubygems"
 require "bundler/setup"
 require "redis"
+require "pp"
 
 $redis = Redis.new
 
@@ -27,21 +28,21 @@ def round_time(timestamp, seconds = 60)
   (timestamp.to_f / seconds).floor * seconds
 end
 
-def minute_counts(key, seconds = 60, prefix = "minute")
+def minute_counts(key, points = 10, seconds = 60, prefix = "minute")
   last = round_time(Time.now, seconds)
-  first = last - 9 * seconds
+  first = last - (points - 1) * seconds
   steps = *(first..last).step(seconds)
 
   count_helper(key, prefix, steps)
 end
 
-def hour_counts(key)
-  minute_counts(key, 3600, "hour")
+def hour_counts(key, points = 10)
+  minute_counts(key, points, 3600, "hour")
 end
 
-def day_counts(key)
+def day_counts(key, points = 10)
   last = Date.today
-  first = last - 9
+  first = last - (points - 1)
   steps = *first.step(last)
 
   count_helper(key, "day", steps)
@@ -59,5 +60,9 @@ def count_helper(key, prefix, steps)
   # get keys and replace nils with zero
   values = $redis.mget(*keys).map{|val| (val || 0).to_i }
 
-  puts "#{prefix} - #{key} - #{values.inspect}"
+  values = Hash[steps.map{|step| step = step.strftime("%Y-%m-%d") if step.is_a?(Date); [step, values.shift]}]
+
+  puts "#{prefix} - #{key}"
+  pp values
+  puts
 end
