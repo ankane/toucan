@@ -49,9 +49,7 @@ def day_counts(key, points = 10)
 end
 
 def lifetime_counts(key)
-  value = $redis.get("lifetime:#{key}")
-
-  puts "lifetime - #{key} - #{value}"
+  $redis.get("lifetime:#{key}").to_i
 end
 
 def count_helper(key, prefix, steps)
@@ -60,9 +58,5 @@ def count_helper(key, prefix, steps)
   # get keys and replace nils with zero
   values = $redis.mget(*keys).map{|val| (val || 0).to_i }
 
-  values = Hash[steps.map{|step| step = step.strftime("%Y-%m-%d") if step.is_a?(Date); [step, values.shift]}]
-
-  puts "#{prefix} - #{key}"
-  pp values
-  puts
+  Hash[steps.map{|step| step = step.strftime("%Y-%m-%d") if step.is_a?(Date); [step, values.shift]}]
 end
