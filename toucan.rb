@@ -1,5 +1,3 @@
-require "rubygems"
-require "bundler/setup"
 require "redis"
 
 class Toucan
@@ -14,16 +12,19 @@ class Toucan
       pairs[key.join(".")] = value
     end while key.pop and !key.empty?
 
-    pairs.each do |key, val|
-      @redis.incrby("lifetime:#{key}", val)
-      hour = round_time(timestamp, 3600)
-      @redis.incrby("hour.#{hour}:#{key}", val)
-      minute = round_time(timestamp, 60)
-      @redis.incrby("minute.#{minute}:#{key}", val)
-      # use date for day YYYY-MM-DD instead of timestamp
-      # need to account for time zone
-      day = Time.at(timestamp).to_date.strftime("%Y-%m-%d")
-      @redis.incrby("day.#{day}:#{key}", val)
+    # batch commands
+    @redis.multi do
+      pairs.each do |key, val|
+        @redis.incrby("lifetime:#{key}", val)
+        hour = round_time(timestamp, 3600)
+        @redis.incrby("hour.#{hour}:#{key}", val)
+        minute = round_time(timestamp, 60)
+        @redis.incrby("minute.#{minute}:#{key}", val)
+        # use date for day YYYY-MM-DD instead of timestamp
+        # need to account for time zone
+        day = Time.at(timestamp).to_date.strftime("%Y-%m-%d")
+        @redis.incrby("day.#{day}:#{key}", val)
+      end
     end
   end
 
