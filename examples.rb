@@ -1,35 +1,25 @@
 require "rubygems"
 require "bundler/setup"
 require "pp"
-require "benchmark"
 require_relative "toucan"
 
 toucan = Toucan.new
 
-bm = Benchmark.measure do
-  # 12x incr (= 12000 incr/sec)
-  # can get 30000 incr/sec with node
-  1000.times do
-    toucan.add_event(Time.now.to_i, "url", ["com", "amazon", "music"], 1)
-  end
-end
+toucan.add_event(Time.now.to_i, "url", ["com", "amazon", "music"], 1)
+toucan.add_event(Time.now.to_i, "url", ["com", "facebook", "www"], 1)
 
-puts bm.real
+puts "minute - com"
+pp toucan.minute_counts("com")
+puts
 
-# toucan.add_event(Time.now.to_i, "url", ["com", "facebook", "www"], 1)
-#
-# puts "minute - com"
-# pp toucan.minute_counts("com")
-# puts
-#
-# puts "hour - com.amazon"
-# pp toucan.hour_counts("com.amazon")
-# puts
-#
-# puts "day - com - 5 points"
-# pp toucan.day_counts("com", 5)
-# puts
-#
-# puts "lifetime - com.facebook.www"
-# pp toucan.lifetime_counts("com.facebook.www")
-# puts
+puts "hour - com.amazon"
+pp toucan.hour_counts("com.amazon")
+puts
+
+puts "day - com - 5 points"
+pp toucan.day_counts("com", 5)
+puts
+
+puts "lifetime - com.facebook.www"
+pp toucan.lifetime_counts("com.facebook.www")
+puts
