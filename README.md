@@ -2,7 +2,7 @@
 
 Real-time stats in Redis
 
-Inspired by [Twitter's Rainbird](http://www.slideshare.net/kevinweil/rainbird-realtime-analytics-at-twitter-strata-2011)
+Inspired by Twitter's [Rainbird](http://www.slideshare.net/kevinweil/rainbird-realtime-analytics-at-twitter-strata-2011)
 
 # How to use
 
