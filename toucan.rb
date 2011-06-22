@@ -13,6 +13,7 @@ class Toucan
     end while key.pop and !key.empty?
 
     # batch commands
+    # TODO: make redis commands non-blocking
     @redis.multi do
       pairs.each do |key, val|
         @redis.incrby("lifetime:#{key}", val)
