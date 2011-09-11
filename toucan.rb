@@ -52,12 +52,13 @@ class Toucan
   end
 
   def lifetime_counts(category, key)
-    @redis.get("#{@prefix}.#{category}.lifetime.#{key}").to_i
+    @redis.get("#{@prefix}.#{category}.lifetime.#{key.join(".")}").to_i
   end
 
   protected
 
   def count_helper(category, key, prefix, steps)
+    key = key.join(".")
     keys = steps.map{|step| "#{@prefix}.#{category}.#{prefix}.#{step}.#{key}"}
 
     # get keys and replace nils with zero

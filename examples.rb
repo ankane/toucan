@@ -9,17 +9,17 @@ toucan.add_event(Time.now, "url", ["com", "amazon", "music"], 1)
 toucan.add_event(Time.now, "url", ["com", "facebook", "www"], 1)
 
 puts "minute - com"
-pp toucan.minute_counts("url", "com")
+pp toucan.minute_counts("url", ["com"])
 puts
 
-puts "hour - com.amazon"
-pp toucan.hour_counts("url", "com.amazon")
+puts "hour - amazon.com"
+pp toucan.hour_counts("url", ["com", "amazon"])
 puts
 
 puts "day - com - 5 points"
-pp toucan.day_counts("url", "com", 5)
+pp toucan.day_counts("url", ["com"], 5)
 puts
 
-puts "lifetime - com.facebook.www"
-pp toucan.lifetime_counts("url", "com.facebook.www")
+puts "lifetime - www.facebook.com"
+pp toucan.lifetime_counts("url", ["com", "facebook", "www"])
 puts

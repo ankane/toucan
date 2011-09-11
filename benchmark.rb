@@ -18,7 +18,7 @@ puts bm.real
 bm = Benchmark.measure do
   # generate 4000 graphs per sec
   4000.times do
-    toucan.minute_counts("url", "com")
+    toucan.minute_counts("url", ["com"])
   end
 end
 
