@@ -4,9 +4,11 @@ class Toucan
 
   def initialize
     @redis = Redis.new
+    @prefix = "toucan"
   end
 
   def add_event(timestamp, category, key, value, properties = {}, properties_with_counts = {})
+    timestamp = timestamp.to_i
     pairs = {}
     begin
       pairs[key.join(".")] = value
@@ -16,47 +18,47 @@ class Toucan
     # TODO: make redis commands non-blocking
     @redis.multi do
       pairs.each do |key, val|
-        @redis.incrby("lifetime:#{key}", val)
+        @redis.incrby("#{@prefix}.#{category}.lifetime.#{key}", val)
         hour = round_time(timestamp, 3600)
-        @redis.incrby("hour.#{hour}:#{key}", val)
+        @redis.incrby("#{@prefix}.#{category}.hour.#{hour}.#{key}", val)
         minute = round_time(timestamp, 60)
-        @redis.incrby("minute.#{minute}:#{key}", val)
+        @redis.incrby("#{@prefix}.#{category}.minute.#{minute}.#{key}", val)
         # use date for day YYYY-MM-DD instead of timestamp
         # need to account for time zone
         day = Time.at(timestamp).to_date.strftime("%Y-%m-%d")
-        @redis.incrby("day.#{day}:#{key}", val)
+        @redis.incrby("#{@prefix}.#{category}.day.#{day}.#{key}", val)
       end
     end
   end
 
-  def minute_counts(key, points = 10, seconds = 60, prefix = "minute")
+  def minute_counts(category, key, points = 10, seconds = 60, prefix = "minute")
     last = round_time(Time.now, seconds)
     first = last - (points - 1) * seconds
     steps = *(first..last).step(seconds)
 
-    count_helper(key, prefix, steps)
+    count_helper(category, key, prefix, steps)
   end
 
-  def hour_counts(key, points = 10)
-    minute_counts(key, points, 3600, "hour")
+  def hour_counts(category, key, points = 10)
+    minute_counts(category, key, points, 3600, "hour")
   end
 
-  def day_counts(key, points = 10)
+  def day_counts(category, key, points = 10)
     last = Date.today
     first = last - (points - 1)
     steps = *first.step(last)
 
-    count_helper(key, "day", steps)
+    count_helper(category, key, "day", steps)
   end
 
-  def lifetime_counts(key)
-    @redis.get("lifetime:#{key}").to_i
+  def lifetime_counts(category, key)
+    @redis.get("#{@prefix}.#{category}.lifetime.#{key}").to_i
   end
 
   protected
 
-  def count_helper(key, prefix, steps)
-    keys = steps.map{|step| "#{prefix}.#{step}:#{key}"}
+  def count_helper(category, key, prefix, steps)
+    keys = steps.map{|step| "#{@prefix}.#{category}.#{prefix}.#{step}.#{key}"}
 
     # get keys and replace nils with zero
     values = @redis.mget(*keys).map{|val| (val || 0).to_i }
